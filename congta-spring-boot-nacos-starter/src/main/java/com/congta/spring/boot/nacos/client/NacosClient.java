@@ -40,7 +40,7 @@ public class NacosClient implements ConfigService {
                     properties.put("password", env.password);
                 }
             }
-            properties.put("namespace", env.name);
+            properties.put("namespace", env.namespace);
             configService = NacosFactory.createConfigService(properties);
         }
         return configService;

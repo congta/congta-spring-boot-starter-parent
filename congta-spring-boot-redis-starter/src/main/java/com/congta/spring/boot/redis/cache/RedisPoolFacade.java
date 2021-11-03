@@ -40,10 +40,15 @@ import redis.clients.jedis.resps.KeyedListElement;
 
 /**
  * 这个工具是为了给 Jedis 和 JedisCluster 以统一的外观，
- * 因为测试环境使用 redislabs 提供的服务，是给自己挖了个坑，不支持 slots 命令，
+ * 因为测试环境使用 redislabs 提供的服务，是给自己挖了个坑，
+ * redislib 提供的免费 redis 服务不支持集群，初始化过程中会在
+ * JedisClusterInfoCache.discoverClusterNodesAndSlots 调用 slots 命令（Jedis.clusterSlots），
+ * 产生错误： ERR command is not allowed.
+ *
  * 只有封装一个外观，将来才有切换成 cluster 模式的可能，
  * 使用 spring-data-redis 也是可以的，它会统一成 RedisTemplate，
  * 不过目前还没领会到用这个框架的好处。
+ *
  * Created by zhangfucheng on 2021/9/7.
  */
 public class RedisPoolFacade implements RedisFacade {

@@ -6,6 +6,7 @@ import com.congta.spring.boot.nacos.client.NacosEnv;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.context.properties.ConfigurationBeanFactoryMetadata;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -21,11 +22,14 @@ public class CongtaNacosAutoConfiguration {
 
     @ConditionalOnMissingBean(NacosClient.class)
     @Bean
-    public NacosClient nacosClient(CongtaNacosProperties properties) {
-        if (StringUtils.isNotBlank(properties.getName())) {
-            NacosEnv.DEFAULT = NacosEnv.valueOf(properties);
-        }
+    public NacosClient nacosClient() {
         return NacosClients.getClient();
+    }
+
+    @ConditionalOnMissingBean(ConfigurationBeanFactoryMetadata.class)
+    @Bean("org.springframework.boot.context.properties.ConfigurationBeanFactoryMetadata")
+    public ConfigurationBeanFactoryMetadata configurationBeanFactoryMetadata() {
+        return new ConfigurationBeanFactoryMetadata();
     }
 
 }

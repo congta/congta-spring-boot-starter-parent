@@ -11,6 +11,7 @@ public class CongtaNacosProperties {
 
     private String name;
     private String uri;
+    private String namespace;
     private String username;
     private String password;
     private String kcSid;
@@ -45,6 +46,14 @@ public class CongtaNacosProperties {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
     }
 
     public String getKcSid() {
