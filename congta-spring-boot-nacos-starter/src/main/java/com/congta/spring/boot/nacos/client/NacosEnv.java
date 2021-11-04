@@ -41,6 +41,7 @@ public class NacosEnv {
     }
 
     private static final String CN_URL = "http://cn.nacos.congta.com:8848";
+    private static final String CN_INTER_URL = "http://cn-inter.nacos.congta.com:8848";
 
     private static final Map<String, NacosEnv> ENV_MAP = new ConcurrentHashMap<>();
 
@@ -49,6 +50,13 @@ public class NacosEnv {
 
     public static final NacosEnv MTCN = create(
             "mtcn", CN_URL,
+            "37cc9a94-8541-4bc0-b93d-0a0d674984d6",
+            "maptime-prod",
+            "AAAAAX6mPFbZu9_Lep0Lm1GUHcCBaKZk_AiOfQ",
+            "AAAAAn744y3BEo9djYB2X9SzFYdH7PlhsJrnDLnTv0sdBLffYcY");
+
+    public static final NacosEnv MTCN_INTER = create(
+            "mtcn-inter", CN_INTER_URL,
             "37cc9a94-8541-4bc0-b93d-0a0d674984d6",
             "maptime-prod",
             "AAAAAX6mPFbZu9_Lep0Lm1GUHcCBaKZk_AiOfQ",

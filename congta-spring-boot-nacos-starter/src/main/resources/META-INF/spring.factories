@@ -1,2 +1,8 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-com.congta.spring.boot.nacos.CongtaNacosAutoConfiguration
+  com.congta.spring.boot.nacos.CongtaNacosAutoConfiguration
+#org.springframework.boot.env.EnvironmentPostProcessor=\
+#  com.congta.spring.boot.nacos.CongtaNacosEnvProcessor
+org.springframework.context.ApplicationListener=\
+  com.congta.spring.boot.nacos.CongtaNacosEventHandler
+#org.springframework.context.ApplicationContextInitializer=\
+#  com.congta.spring.boot.nacos.CongtaNacosContextInitializer
