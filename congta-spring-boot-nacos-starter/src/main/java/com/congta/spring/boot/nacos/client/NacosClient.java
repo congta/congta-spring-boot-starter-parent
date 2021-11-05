@@ -9,11 +9,15 @@ import com.congta.spring.boot.shared.ex.OpCode;
 import com.congta.spring.boot.shared.security.KeyCenterFactory;
 import java.util.Properties;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by zhangfucheng on 2021/11/1.
  */
 public class NacosClient implements ConfigService {
+
+    private static Logger log = LoggerFactory.getLogger(NacosClient.class);
 
     private NacosEnv env;
 
@@ -28,7 +32,8 @@ public class NacosClient implements ConfigService {
 
     public ConfigService getConfigService() throws NacosException {
         // 允许并发冲突
-        if (configService == null) {
+        ConfigService localService = configService;
+        if (localService == null) {
             Properties properties = new Properties();
             properties.put("serverAddr", env.uri);
             if (StringUtils.isNotBlank(env.username)) {
@@ -41,120 +46,137 @@ public class NacosClient implements ConfigService {
                 }
             }
             properties.put("namespace", env.namespace);
-            configService = NacosFactory.createConfigService(properties);
+            log.warn("create new config service instance for {}", env.name());
+            localService = NacosFactory.createConfigService(properties);
+            configService = localService;
         }
-        return configService;
+        return localService;
     }
 
     @Override
     public String getConfig(String dataId, String group, long timeoutMs) {
-        try {
-            return getConfigService().getConfig(dataId, group, timeoutMs);
-        } catch (NacosException e) {
-            throw ExceptionHelper.build(OpCode.SYSTEM_ERROR, "get config from nacos error", e);
-        }
+        return supplyWithAutoRefreshToken(() ->
+                getConfigService().getConfig(dataId, group, timeoutMs));
     }
 
     public String getConfig(String dataId, String group) {
-        return getConfig(dataId, group, timeout);
+        return supplyWithAutoRefreshToken(() ->
+                getConfig(dataId, group, timeout));
     }
 
     @Override
     public String getConfigAndSignListener(String dataId, String group, long timeoutMs, Listener listener) {
-        try {
-            return getConfigService().getConfigAndSignListener(dataId, group, timeoutMs, listener);
-        } catch (NacosException e) {
-            throw ExceptionHelper.build(OpCode.SYSTEM_ERROR, "get config from nacos error", e);
-        }
+        return supplyWithAutoRefreshToken(() ->
+                getConfigService().getConfigAndSignListener(dataId, group, timeoutMs, listener));
     }
 
     public String getConfigAndSignListener(String dataId, String group, NacosListener listener) {
-        try {
-            return getConfigService().getConfigAndSignListener(dataId, group, timeout, listener);
-        } catch (NacosException e) {
-            throw ExceptionHelper.build(OpCode.SYSTEM_ERROR,
-                    "get config and register nacos listener error", e);
-        }
+        return supplyWithAutoRefreshToken(() ->
+                getConfigService().getConfigAndSignListener(dataId, group, timeout, listener));
     }
 
     @Override
     public void addListener(String dataId, String group, Listener listener) {
-        try {
-            getConfigService().addListener(dataId, group, listener);
-        } catch (NacosException e) {
-            throw ExceptionHelper.build(OpCode.SYSTEM_ERROR, "get config from nacos error", e);
-        }
+        runWithAutoRefreshToken(() ->
+                getConfigService().addListener(dataId, group, listener));
     }
 
     @Override
     public boolean publishConfig(String dataId, String group, String content) {
-        try {
-            return getConfigService().publishConfig(dataId, group, content);
-        } catch (NacosException e) {
-            throw ExceptionHelper.build(OpCode.SYSTEM_ERROR, "get config from nacos error", e);
-        }
+        return supplyWithAutoRefreshToken(() ->
+                getConfigService().publishConfig(dataId, group, content));
     }
 
     @Override
     public boolean publishConfig(String dataId, String group, String content, String type) {
-        try {
-            return getConfigService().publishConfig(dataId, group, content, type);
-        } catch (NacosException e) {
-            throw ExceptionHelper.build(OpCode.SYSTEM_ERROR, "get config from nacos error", e);
-        }
+        return supplyWithAutoRefreshToken(() ->
+                getConfigService().publishConfig(dataId, group, content, type));
     }
 
     @Override
     public boolean publishConfigCas(String dataId, String group, String content, String casMd5) {
-        try {
-            return getConfigService().publishConfigCas(dataId, group, content, casMd5);
-        } catch (NacosException e) {
-            throw ExceptionHelper.build(OpCode.SYSTEM_ERROR, "get config from nacos error", e);
-        }
+        return supplyWithAutoRefreshToken(() ->
+                getConfigService().publishConfigCas(dataId, group, content, casMd5));
     }
 
     @Override
     public boolean publishConfigCas(String dataId, String group, String content, String casMd5, String type) {
-        try {
-            return getConfigService().publishConfigCas(dataId, group, content, casMd5, type);
-        } catch (NacosException e) {
-            throw ExceptionHelper.build(OpCode.SYSTEM_ERROR, "get config from nacos error", e);
-        }
+        return supplyWithAutoRefreshToken(() ->
+                getConfigService().publishConfigCas(dataId, group, content, casMd5, type));
     }
 
     @Override
     public boolean removeConfig(String dataId, String group) {
-        try {
-            return getConfigService().removeConfig(dataId, group);
-        } catch (NacosException e) {
-            throw ExceptionHelper.build(OpCode.SYSTEM_ERROR, "get config from nacos error", e);
-        }
+        return supplyWithAutoRefreshToken(() ->
+                getConfigService().removeConfig(dataId, group));
     }
 
     @Override
     public void removeListener(String dataId, String group, Listener listener) {
-        try {
-            getConfigService().removeListener(dataId, group, listener);
-        } catch (NacosException e) {
-            throw ExceptionHelper.build(OpCode.SYSTEM_ERROR, "get config from nacos error", e);
-        }
+        runWithAutoRefreshToken(() -> getConfigService().removeListener(dataId, group, listener));
     }
 
     @Override
     public String getServerStatus() {
-        try {
-            return getConfigService().getServerStatus();
-        } catch (NacosException e) {
-            throw ExceptionHelper.build(OpCode.SYSTEM_ERROR, "get config from nacos error", e);
-        }
+        return supplyWithAutoRefreshToken(() -> getConfigService().getServerStatus());
     }
 
     @Override
     public void shutDown() {
         try {
+            // 失败就失败了，无需刷新重试
             getConfigService().shutDown();
         } catch (NacosException e) {
             throw ExceptionHelper.build(OpCode.SYSTEM_ERROR, "get config from nacos error", e);
         }
+    }
+
+    /**
+     * configService 好像不会自动刷新 token，但是也没找到有刷新 token 的方法，所以重新创建一个，
+     * 在网上竟然没搜到有人问这个问题，我的打开方式不对？？？
+     *
+     * 服务报错： Caused by: com.alibaba.nacos.api.exception.NacosException: http error, code=403,dataId=xxx,group=yyy,tenant=zzz
+     * nacos日志：[http-nio-8090-exec-2:c.a.n.c.c.i.ClientWorker] [config_rpc_client] [sub-server-error]
+     *           dataId=xxx, group=yyy, tenant=zzz, code=Response{resultCode=500, errorCode=403, message='token expired!', requestId='null'}
+     */
+    private <T> T supplyWithAutoRefreshToken(Supplier<T> supplier) {
+        try {
+            return supplier.get();
+        } catch (NacosException e) {
+            if (e.getErrCode() != 403) {
+                throw ExceptionHelper.build(OpCode.SYSTEM_ERROR, "put/get config error", e);
+            }
+        }
+        this.configService = null;
+        try {
+            return supplier.get();
+        } catch (NacosException e) {
+            throw ExceptionHelper.build(OpCode.SYSTEM_ERROR, "put/get config error after refresh", e);
+        }
+    }
+
+    private void runWithAutoRefreshToken(Runner runner) {
+        try {
+            runner.run();
+            return;
+        } catch (NacosException e) {
+            if (e.getErrCode() != 403) {
+                throw ExceptionHelper.build(OpCode.SYSTEM_ERROR, "put/get config error", e);
+            }
+        }
+        this.configService = null;
+        try {
+            runner.run();
+        } catch (NacosException e) {
+            throw ExceptionHelper.build(OpCode.SYSTEM_ERROR, "put/get config error after refresh", e);
+        }
+    }
+
+    interface Supplier<T> {
+        T get() throws NacosException;
+    }
+
+    interface Runner {
+        void run() throws NacosException;
     }
 }

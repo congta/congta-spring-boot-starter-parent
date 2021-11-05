@@ -5,8 +5,11 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.congta.spring.boot.web.ServletUtils;
+import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Base64Utils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -19,9 +22,11 @@ import java.util.Date;
  */
 public class JwtUtils {
 
-    public static final String JWT_KEY_SESSION_ID = "sid";
+    private static final String JWT_KEY_SESSION_ID = "sid";
 
     private static Logger log = LoggerFactory.getLogger(JwtUtils.class);
+
+    private static Random random = new Random();
 
     /**
      * 过期时间为30分钟后，密钥是userId加上一串字符串
@@ -73,6 +78,27 @@ public class JwtUtils {
             log.warn("get audience error, token: {}", token, e);
             return null;
         }
+    }
+
+    public static String createSecret(SessionContext session) {
+        byte[] data = new byte[9];
+        random.nextBytes(data);
+        String secret = Base64Utils.encodeToUrlSafeString(data);
+        session.setSession(ServletUtils.SESSION_KEY_SECRET, secret);
+        return secret;
+    }
+
+    public static String getSecret(SessionContext session) {
+        return session.getSessionAsString(ServletUtils.SESSION_KEY_SECRET);
+    }
+
+
+    public static String getOrCreateSecret(SessionContext session) {
+        String secret = getSecret(session);
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(secret)) {
+            return secret;
+        }
+        return createSecret(session);
     }
 
 }

@@ -14,6 +14,7 @@ public class CongtaMongoProperties {
     private String password;
     private String database;
     private String kcSid;
+    private ConnectionPoolProperties pool;
 
     public String getUri() {
         return uri;
@@ -53,5 +54,43 @@ public class CongtaMongoProperties {
 
     public void setKcSid(String kcSid) {
         this.kcSid = kcSid;
+    }
+
+    public ConnectionPoolProperties getPool() {
+        return pool;
+    }
+
+    public void setPool(ConnectionPoolProperties pool) {
+        this.pool = pool;
+    }
+
+    static class ConnectionPoolProperties {
+        private int maxSize = 100;
+        private int minSize;
+        private long maxWaitMs = 1000 * 60 * 2;
+
+        public int getMaxSize() {
+            return maxSize;
+        }
+
+        public void setMaxSize(int maxSize) {
+            this.maxSize = maxSize;
+        }
+
+        public int getMinSize() {
+            return minSize;
+        }
+
+        public void setMinSize(int minSize) {
+            this.minSize = minSize;
+        }
+
+        public long getMaxWaitMs() {
+            return maxWaitMs;
+        }
+
+        public void setMaxWaitMs(long maxWaitMs) {
+            this.maxWaitMs = maxWaitMs;
+        }
     }
 }

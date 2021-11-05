@@ -2,9 +2,12 @@ package com.congta.spring.boot.mongodb;
 
 import com.congta.spring.boot.shared.security.KeyCenter;
 import com.congta.spring.boot.shared.security.KeyCenterFactory;
+import com.mongodb.ConnectionString;
+import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -36,7 +39,15 @@ public class CongtaMongoAutoConfiguration {
             host = host.replace("<username>", keyCenter.decrypt(properties.getUsername()));
             host = host.replace("<password>", keyCenter.decrypt(properties.getPassword()));
         }
-        return MongoClients.create(host);
+        // return MongoClients.create(host);
+        return MongoClients.create(MongoClientSettings.builder()
+                .applyConnectionString(new ConnectionString(host))
+                .applyToConnectionPoolSettings(builder -> builder
+                        .maxSize(properties.getPool().getMaxSize())
+                        .minSize(properties.getPool().getMinSize())
+                        .maxWaitTime(properties.getPool().getMaxWaitMs(), TimeUnit.MILLISECONDS)
+                )
+                .build());
     }
 
     @ConditionalOnMissingBean(MongoDatabase.class)

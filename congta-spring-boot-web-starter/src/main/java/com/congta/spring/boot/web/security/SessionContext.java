@@ -46,7 +46,7 @@ public class SessionContext {
     }
 
     public String getSessionId() {
-        return getOrNull().getUserId();
+        return getOrNull().getSessionId();
     }
 
     /* ============== session ================ */

@@ -1,10 +1,8 @@
 package com.congta.spring.boot.web;
 
-import com.congta.spring.boot.web.security.SessionContext;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.Base64Utils;
-import org.springframework.util.CollectionUtils;
-
+import com.congta.spring.boot.shared.ex.ExceptionHelper;
+import com.congta.spring.boot.shared.ex.OpCode;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -13,6 +11,8 @@ import java.util.stream.Collectors;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.commons.io.IOUtils;
+import org.springframework.util.CollectionUtils;
 
 /**
  * Created by zhangfucheng on 2021/10/15.
@@ -46,24 +46,22 @@ public class ServletUtils {
                 .collect(Collectors.toList());
     }
 
-    public static String createSecret(SessionContext session) {
-        byte[] data = new byte[9];
-        random.nextBytes(data);
-        String secret = Base64Utils.encodeToUrlSafeString(data);
-        session.setSession(SESSION_KEY_SECRET, secret);
-        return secret;
-    }
+    public static void response(HttpServletResponse response, byte[] bytes, String contentType) {
+        try {
+            response.addHeader("Content-Length", "" + bytes.length);
+            //永久缓存图片
+            if ("image/jpg".equals(contentType) || "image/png".equals(contentType)) {
+                response.setHeader("Cache-Control", "max-age=31536000, public");
+            } else {
+                response.setHeader("Cache-Control", "No-cache");
+                response.setDateHeader("Expires", 0);
+            }
+            response.setContentType(contentType);
 
-    public static String getSecret(SessionContext session) {
-        return session.getSessionAsString(SESSION_KEY_SECRET);
-    }
-
-
-    public static String getOrCreateSecret(SessionContext session) {
-        String secret = getSecret(session);
-        if (StringUtils.isNotBlank(secret)) {
-            return secret;
+            IOUtils.write(bytes, response.getOutputStream());
+        } catch (IOException e) {
+            throw ExceptionHelper.build(OpCode.SYSTEM_ERROR, "write file to client error", e);
         }
-        return createSecret(session);
     }
+
 }

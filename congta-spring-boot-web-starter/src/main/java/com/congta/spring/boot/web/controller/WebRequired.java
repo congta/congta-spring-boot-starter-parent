@@ -43,13 +43,13 @@ public class WebRequired implements HandlerInterceptor {
         }
         SessionMeta ctx = session.create(jwt.getSessionId());
 
-        String secret = ServletUtils.getSecret(session);
+        String secret = JwtUtils.getSecret(session);
         if (JwtUtils.verifyToken(token, secret)) {
             ctx.setUserId(jwt.getUserId());
         } else {
             jwt.setUserId(null);
             if (secret == null) {
-                secret = ServletUtils.createSecret(session);
+                secret = JwtUtils.createSecret(session);
             }
             token = JwtUtils.createToken(jwt, secret);
             ServletUtils.addCookie(response, ServletUtils.COOKIE_KEY_TOKEN, token);
