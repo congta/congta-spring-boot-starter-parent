@@ -39,13 +39,15 @@ public class CongtaMongoAutoConfiguration {
             host = host.replace("<username>", keyCenter.decrypt(properties.getUsername()));
             host = host.replace("<password>", keyCenter.decrypt(properties.getPassword()));
         }
+        CongtaMongoProperties.ConnectionPoolProperties poolProperties = properties.getPool() != null
+                ? properties.getPool() : new CongtaMongoProperties.ConnectionPoolProperties();
         // return MongoClients.create(host);
         return MongoClients.create(MongoClientSettings.builder()
                 .applyConnectionString(new ConnectionString(host))
                 .applyToConnectionPoolSettings(builder -> builder
-                        .maxSize(properties.getPool().getMaxSize())
-                        .minSize(properties.getPool().getMinSize())
-                        .maxWaitTime(properties.getPool().getMaxWaitMs(), TimeUnit.MILLISECONDS)
+                        .maxSize(poolProperties.getMaxSize())
+                        .minSize(poolProperties.getMinSize())
+                        .maxWaitTime(poolProperties.getMaxWaitMs(), TimeUnit.MILLISECONDS)
                 )
                 .build());
     }

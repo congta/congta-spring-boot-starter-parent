@@ -75,6 +75,11 @@ public class NacosClient implements ConfigService {
                 getConfigService().getConfigAndSignListener(dataId, group, timeout, listener));
     }
 
+    public void signListenerAndCallOnInit(String dataId, String group, NacosListener listener) {
+        String data = getConfigAndSignListener(dataId, group, listener);
+        listener.receiveConfigInfo(data);
+    }
+
     @Override
     public void addListener(String dataId, String group, Listener listener) {
         runWithAutoRefreshToken(() ->

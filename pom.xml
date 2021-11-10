@@ -14,7 +14,7 @@
 
     <groupId>com.congta.spring</groupId>
     <artifactId>congta-spring-boot-starter-parent</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.3-SNAPSHOT</version>
 
     <modules>
         <module>congta-spring-boot-web-starter</module>
