@@ -15,6 +15,5 @@ public class EmptyMongoBean implements MongoBean {
 
     @Override
     public void set_id(ObjectId _id) {
-
     }
 }

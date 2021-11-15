@@ -66,6 +66,7 @@ public class NacosValueResolver implements InitializingBean {
             p.setProperty(NacosProperties.PREFIX + NacosProperties.USERNAME, username);
             p.setProperty(NacosProperties.PREFIX + NacosProperties.PASSWORD, password);
         }
+        p.setProperty(NacosProperties.PREFIX + "refresh-enabled", "true");
         MutablePropertySources sources = env.getPropertySources();
         sources.addFirst(new PropertiesPropertySource("nacos", p));
     }

@@ -2,6 +2,7 @@ package com.congta.spring.boot.mongodb.mapper;
 
 import com.congta.spring.boot.mongodb.converter.GSONExposeAdapter;
 import com.congta.spring.boot.mongodb.converter.GSONObjectIdAdapter;
+import com.congta.spring.boot.shared.ex.CtValidator;
 import com.congta.spring.boot.shared.ex.ExceptionHelper;
 import com.congta.spring.boot.shared.ex.OpCode;
 import com.google.gson.FieldNamingPolicy;
@@ -47,7 +48,10 @@ public abstract class MongoMapper<T extends MongoBean> implements CrudRepository
 
     protected static final int LIMIT = 50;
     protected static final String F_ID = "_id";
+    protected static final String F_TAG = "tag";
     protected static final String F_STATUS = "status";
+
+    public static final ObjectId MIN_OBJ_ID = new ObjectId(new byte[12]);
 
     @Autowired
     protected MongoDatabase mongoDatabase;
@@ -82,6 +86,10 @@ public abstract class MongoMapper<T extends MongoBean> implements CrudRepository
         return mongoDatabase.getCollection(collectionName);
     }
 
+    protected boolean hasTag() {
+        return false;
+    }
+
     public static String toString(ObjectId value) {
         return Base64.encodeBase64URLSafeString(value.toByteArray());
     }
@@ -114,6 +122,9 @@ public abstract class MongoMapper<T extends MongoBean> implements CrudRepository
             return oid;
         }
         Document document = toDocument(model);
+        if (hasTag()) {
+            document.put(F_TAG, new ObjectId());
+        }
         oid = objectId(getTable().insertOne(document));
         model.set_id(oid);
         return oid;
@@ -135,6 +146,9 @@ public abstract class MongoMapper<T extends MongoBean> implements CrudRepository
 
     public boolean updateOne(ObjectId id, Document update) {
         update.remove(F_ID);
+        if (hasTag()) {
+            update.put(F_TAG, new ObjectId());
+        }
         return updateOne(
                 Filters.eq(id),
                 new BasicDBObject("$set", update)
@@ -176,6 +190,9 @@ public abstract class MongoMapper<T extends MongoBean> implements CrudRepository
 
     public T findOneAndUpdate(ObjectId id, Document update) {
         update.remove(F_ID);
+        if (hasTag()) {
+            update.put(F_TAG, new ObjectId());
+        }
         return findOneAndUpdate(
                 Filters.eq(id),
                 new BasicDBObject("$set", update)
@@ -184,6 +201,9 @@ public abstract class MongoMapper<T extends MongoBean> implements CrudRepository
 
     public <S extends T> S findOneAndUpdate(ObjectId id, Document update, Class<S> returnClass) {
         update.remove(F_ID);
+        if (hasTag()) {
+            update.put(F_TAG, new ObjectId());
+        }
         return findOneAndUpdate(
                 Filters.eq(id),
                 new BasicDBObject("$set", update),
@@ -234,18 +254,27 @@ public abstract class MongoMapper<T extends MongoBean> implements CrudRepository
 
     /**
      * 主要用于离线修复及数据统计，同步所有记录
+     * use findByIdGt / findByTagGt
      */
+    @Deprecated
     public List<T> findByPage(String token, int limit) {
-        FindIterable<Document> iterable;
-        if (StringUtils.isNotBlank(token)) {
-            iterable = getTable()
-                    .find(Filters.gt(F_ID, new ObjectId(token)));
-        } else {
-            iterable = getTable()
-                    .find(Filters.gt(F_ID, new ObjectId(new byte[12])));
-        }
-        MongoCursor<Document> cursor = iterable
-                .sort(Sorts.ascending(F_ID))
+        return findByIdGt(token, limit);
+    }
+
+    public List<T> findByIdGt(String token, int limit) {
+        return findByObjectIdGt(F_ID, token, limit);
+    }
+
+    public List<T> findByTagGt(String token, int limit) {
+        CtValidator.state(hasTag(), "collection do not have tag");
+        return findByObjectIdGt(F_TAG, token, limit);
+    }
+
+    protected List<T> findByObjectIdGt(String field, String token, int limit) {
+        ObjectId base = StringUtils.isBlank(token) ? MIN_OBJ_ID : new ObjectId(token);
+        MongoCursor<Document> cursor = getTable()
+                .find(Filters.gt(field, base))
+                .sort(Sorts.ascending(field))
                 .limit(limit).cursor();
         return toList(cursor);
     }
@@ -293,6 +322,7 @@ public abstract class MongoMapper<T extends MongoBean> implements CrudRepository
 
     /**
      * 不要在这里删除 _id 字段，主记录不允许更新 _id，但子 array 里是可以的
+     * 同理，也不要在这里强制加上 tag，嵌套记录不需要 tag
      * @param t
      * @return
      */

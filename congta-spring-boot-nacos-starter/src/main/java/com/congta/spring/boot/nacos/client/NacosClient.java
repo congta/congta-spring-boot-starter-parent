@@ -150,6 +150,8 @@ public class NacosClient implements ConfigService {
         } catch (NacosException e) {
             if (e.getErrCode() != 403) {
                 throw ExceptionHelper.build(OpCode.SYSTEM_ERROR, "put/get config error", e);
+            } else {
+                log.warn("nacos publish meet 403", String.valueOf(e));
             }
         }
         this.configService = null;
