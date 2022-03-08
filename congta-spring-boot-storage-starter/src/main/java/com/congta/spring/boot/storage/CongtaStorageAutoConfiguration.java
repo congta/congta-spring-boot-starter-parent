@@ -29,7 +29,7 @@ public class CongtaStorageAutoConfiguration {
     @Bean
     public StorageService storageService(CongtaStorageProperties properties) {
         String kcSid = StringUtils.defaultIfBlank(properties.getKcSid(), appKcSid);
-        KeyCenter keyCenter = StringUtils.isBlank(kcSid)
+        KeyCenter keyCenter = StringUtils.isNotBlank(kcSid)
                 ? KeyCenterFactory.get(kcSid)
                 : NoopKeyCenter.INSTANCE;
 

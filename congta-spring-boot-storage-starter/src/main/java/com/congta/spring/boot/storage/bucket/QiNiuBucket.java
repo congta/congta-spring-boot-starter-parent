@@ -76,7 +76,7 @@ public class QiNiuBucket implements OperableBucket {
         if (StringUtils.isBlank(key)) {
             key = Etag.data(file);
         }
-        if (StringUtils.isNotBlank(ns)) {
+        if (StringUtils.isNotBlank(ns) && !StringUtils.startsWith(key, ns + "/")) {
             key = ns + "/" + key;
         }
         try {

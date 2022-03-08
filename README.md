@@ -67,3 +67,4 @@ nacos 本身是有 spring-boot 版本的，但 springboot 2.4 以上有兼容性
 
 * `0.0.1` - 第一版，支持 mongodb / nacos / redis / web
 * `0.0.2` - 修复版，处理 mongo pool properties 为 null 的情况
+* `0.0.3` - 修复存储的 KC 初始化 bug，支持 replace 配置

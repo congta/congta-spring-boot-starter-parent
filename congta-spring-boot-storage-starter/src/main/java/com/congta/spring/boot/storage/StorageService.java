@@ -37,8 +37,18 @@ public class StorageService {
         return loadBucket(ns).upload(file, ns, null);
     }
 
+    public String replace(byte[] file, String ns, String key) {
+        StorageNsConfig nsConfig = getNsConfig(ns);
+        CtValidator.arg(nsConfig.isReplaceable(), "ns is not replaceable " + ns);
+        return loadBucket(ns).upload(file, ns, key);
+    }
+
     public String getUrl(String key) {
-        String url = loadBucket(key).getUrl(key);
+        return getUrl(key, -1, -1);
+    }
+
+    public String getUrl(String key, int width, int height) {
+        String url = loadBucket(key).getUrl(key, width, height);
         String ns = getNamespace(key);
         StorageNsConfig nsConfig = storageConfig.getNamespaces().get(ns);
         if (StringUtils.isNotBlank(nsConfig.getStyle())) {
@@ -47,9 +57,13 @@ public class StorageService {
         return url;
     }
 
+    public StorageNsConfig getNsConfig(String ns) {
+        ns = getNamespace(ns);
+        return storageConfig.getNamespaces().get(ns);
+    }
+
     private OperableBucket loadBucket(String key) {
-        String ns = getNamespace(key);
-        StorageNsConfig nsConfig = storageConfig.getNamespaces().get(ns);
+        StorageNsConfig nsConfig = getNsConfig(key);
         CtValidator.notNull(nsConfig, "storage namespace not found for " + key);
         String bucketName = nsConfig.getBucket();
         StorageBucketConfig bkConfig = storageConfig.getBuckets().get(bucketName);

@@ -14,6 +14,8 @@ public class StorageNsConfig {
 
     private String style;
 
+    private boolean replaceable;
+
     public String getBucket() {
         return bucket;
     }
@@ -44,5 +46,13 @@ public class StorageNsConfig {
 
     public void setStyle(String style) {
         this.style = style;
+    }
+
+    public boolean isReplaceable() {
+        return replaceable;
+    }
+
+    public void setReplaceable(boolean replaceable) {
+        this.replaceable = replaceable;
     }
 }
