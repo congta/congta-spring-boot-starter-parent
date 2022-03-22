@@ -73,6 +73,7 @@ public class QiNiuBucket implements OperableBucket {
 
     @Override
     public String upload(byte[] file, String ns, String key) {
+        boolean isReplace = StringUtils.isNotBlank(key);
         if (StringUtils.isBlank(key)) {
             key = Etag.data(file);
         }
@@ -80,7 +81,7 @@ public class QiNiuBucket implements OperableBucket {
             key = ns + "/" + key;
         }
         try {
-            if (exist(key)) {
+            if (!isReplace && exist(key)) {
                 return key;
             }
             String upToken = getUpToken(auth);
