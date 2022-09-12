@@ -47,7 +47,7 @@ public class CongtaStorageAutoConfiguration {
         StorageService storageService = new StorageService(authQiNiu, null);
 
         // https://www.baeldung.com/jackson-yaml
-        NacosClients.getClient().signListenerAndCallOnInit(configIds[1], configIds[0], data -> {
+        ConfigCenter.getClient().signListenerAndCallOnInit(configIds[1], configIds[0], data -> {
             storageService.updateConfig(YamlMapper.readValue(data, StorageConfig.class));
         });
 
