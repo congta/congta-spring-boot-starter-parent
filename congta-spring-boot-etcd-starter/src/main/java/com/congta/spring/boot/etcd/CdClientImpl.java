@@ -22,19 +22,16 @@ import java.util.function.Consumer;
 /**
  * Created by zhfch on 2022/9/12.
  */
-public class ConfigCenter {
+public class CdClientImpl extends CdClient {
 
-    private static Logger log = LoggerFactory.getLogger(ConfigCenter.class);
-
-    // local data center
-    private static ConfigCenter defaultInstance = null;
+    private static final Logger log = LoggerFactory.getLogger(CdClientImpl.class);
 
     private final Client client;
     private final String prefix;
 
     private final ConcurrentMap<String, Watch.Watcher> watchers = new ConcurrentHashMap<>();
 
-    public ConfigCenter(String uri, byte[] username, byte[] password, String prefix) {
+    public CdClientImpl(String uri, byte[] username, byte[] password, String prefix) {
         client = Client.builder().endpoints(uri)
                 .user(ByteSequence.from(username))
                 .password(ByteSequence.from(password))
@@ -42,7 +39,8 @@ public class ConfigCenter {
         this.prefix = prefix;
     }
 
-    public void getAndWatch(String path, Consumer<String> consumer) {
+    @Override
+    public void getAndWatchString(String path, Consumer<String> consumer) {
         ByteSequence key = ByteSequence.from(prefix + path, StandardCharsets.UTF_8);
         CompletableFuture<GetResponse> getFuture = client.getKVClient().get(key);
         try {
@@ -72,6 +70,7 @@ public class ConfigCenter {
         }
     }
 
+    @Override
     public void put(String path, String value) {
         ByteSequence key = ByteSequence.from(prefix + path, StandardCharsets.UTF_8);
         ByteSequence v = ByteSequence.from(value, StandardCharsets.UTF_8);
@@ -83,15 +82,8 @@ public class ConfigCenter {
         }
     }
 
+    @Override
     public void close() {
         watchers.forEach((k, w) -> w.close());
-    }
-
-    public static ConfigCenter getClient() {
-        return defaultInstance;
-    }
-
-    public static void setDefault(ConfigCenter local) {
-        ConfigCenter.defaultInstance = local;
     }
 }

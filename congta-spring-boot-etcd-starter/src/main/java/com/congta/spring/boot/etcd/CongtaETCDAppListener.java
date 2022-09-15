@@ -22,12 +22,9 @@ public class CongtaETCDAppListener implements ApplicationListener<ApplicationEve
     public void processEnvironment(ConfigurableEnvironment environment) {
         String name = environment.getProperty("spring.etcd.name");
         log.warn("load etcd by name {}", name);
-        if (StringUtils.equalsIgnoreCase(name, "mtcn")) {
-            ConfigCenter.setDefault(create(ETCDConfig.MTCN));
-        } else if (StringUtils.equalsIgnoreCase(name, "mtus")) {
-            ConfigCenter.setDefault(create(ETCDConfig.MTUS));
-        } else if (StringUtils.equalsIgnoreCase(name, "mtcn-preview")) {
-            ConfigCenter.setDefault(create(ETCDConfig.MTCN_PREVIEW));
+        CdEnv env = CdEnv.valueOf(name);
+        if (env != null) {
+            CdClient.setDefault(create(env.config));
         } else {
             throw new RuntimeException("unknown etcd env name: " + name);
         }
@@ -44,7 +41,7 @@ public class CongtaETCDAppListener implements ApplicationListener<ApplicationEve
         }
     }
 
-    private ConfigCenter create(ETCDConfig etcdConfig) {
+    private CdClientImpl create(ETCDConfig etcdConfig) {
         byte[] username = Base64.decodeBase64(etcdConfig.getUsername());
         byte[] password = Base64.decodeBase64(etcdConfig.getPassword());
         if (StringUtils.isNotBlank(etcdConfig.getKcSid())) {
@@ -53,7 +50,7 @@ public class CongtaETCDAppListener implements ApplicationListener<ApplicationEve
             password = keyCenter.decrypt(password);
         }
 
-        return new ConfigCenter(
+        return new CdClientImpl(
                 etcdConfig.getUri(),
                 username,
                 password,
