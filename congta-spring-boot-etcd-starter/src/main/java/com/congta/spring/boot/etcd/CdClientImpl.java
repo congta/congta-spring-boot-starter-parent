@@ -52,6 +52,7 @@ public class CdClientImpl extends CdClient {
                 consumer.accept(response.getKvs().get(0).getValue().toString(StandardCharsets.UTF_8));
             }
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            log.error("get and watch etcd error for path: {}, reason: {}", key.toString(StandardCharsets.UTF_8), String.valueOf(e));
             throw new RuntimeException(e);
         }
         if (watchers.containsKey(path)) {
@@ -78,6 +79,7 @@ public class CdClientImpl extends CdClient {
         try {
             getFuture.get(3, TimeUnit.SECONDS);
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            log.error("get etcd error for path: {}, reason: {}", key.toString(StandardCharsets.UTF_8), String.valueOf(e));
             throw new RuntimeException(e);
         }
     }

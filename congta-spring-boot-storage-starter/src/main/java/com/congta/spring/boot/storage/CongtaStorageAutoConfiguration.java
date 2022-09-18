@@ -42,7 +42,7 @@ public class CongtaStorageAutoConfiguration {
             );
         }
 
-        String configId = StringUtils.defaultIfBlank(properties.getConfigId(), "srv_storage");
+        String configId = StringUtils.defaultIfBlank(properties.getConfigId(), "/srv_storage");
         StorageService storageService = new StorageService(authQiNiu, null);
 
         // https://www.baeldung.com/jackson-yaml

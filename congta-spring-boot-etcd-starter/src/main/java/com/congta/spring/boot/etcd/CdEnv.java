@@ -20,13 +20,13 @@ public class CdEnv {
     private static final Map<String, CdEnv> ENV_MAP = new ConcurrentHashMap<>();
 
     public static CdEnv valueOf(String name) {
-        name = StringUtils.lowerCase(name);
+        name = StringUtils.upperCase(name);
         return ENV_MAP.get(name);
     }
 
     public static CdEnv create(String name, String uri, String username, String password, String kcSid, String pathPrefix) {
         Validate.notBlank(name, "nacos env can not be blank");
-        name = name.toUpperCase();
+        name = StringUtils.upperCase(name);
         Validate.isTrue(!ENV_MAP.containsKey(name), "nacos env is already defined");
 
         ETCDConfig etcdConfig = new ETCDConfig();
