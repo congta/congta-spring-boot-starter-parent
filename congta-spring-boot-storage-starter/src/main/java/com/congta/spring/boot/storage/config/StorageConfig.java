@@ -1,7 +1,5 @@
 package com.congta.spring.boot.storage.config;
 
-import com.alibaba.nacos.api.config.ConfigType;
-import com.alibaba.nacos.api.config.annotation.NacosConfigurationProperties;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 

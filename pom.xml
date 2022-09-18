@@ -14,7 +14,7 @@
 
     <groupId>com.congta.spring</groupId>
     <artifactId>congta-spring-boot-starter-parent</artifactId>
-    <version>0.0.4-SNAPSHOT</version>
+    <version>0.0.6-SNAPSHOT</version>
 
     <modules>
         <module>congta-spring-boot-web-starter</module>
@@ -23,6 +23,7 @@
         <module>congta-spring-boot-redis-starter</module>
         <module>congta-spring-boot-nacos-starter</module>
         <module>congta-spring-boot-storage-starter</module>
+        <module>congta-spring-boot-etcd-starter</module>
     </modules>
 
     <properties>
@@ -56,6 +57,11 @@
             <dependency>
                 <groupId>com.congta.spring</groupId>
                 <artifactId>congta-spring-boot-nacos-starter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.congta.spring</groupId>
+                <artifactId>congta-spring-boot-etcd-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

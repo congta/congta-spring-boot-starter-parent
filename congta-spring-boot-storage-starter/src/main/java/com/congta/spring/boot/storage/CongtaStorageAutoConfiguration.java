@@ -1,6 +1,6 @@
 package com.congta.spring.boot.storage;
 
-import com.congta.spring.boot.nacos.client.NacosClients;
+import com.congta.spring.boot.etcd.CdClient;
 import com.congta.spring.boot.shared.security.KeyCenter;
 import com.congta.spring.boot.shared.security.KeyCenterFactory;
 import com.congta.spring.boot.shared.security.NoopKeyCenter;
@@ -42,12 +42,11 @@ public class CongtaStorageAutoConfiguration {
             );
         }
 
-        String configId = StringUtils.defaultIfBlank(properties.getConfigId(), "shared~srv_storage");
-        String[] configIds = configId.split("~+");
+        String configId = StringUtils.defaultIfBlank(properties.getConfigId(), "/srv_storage");
         StorageService storageService = new StorageService(authQiNiu, null);
 
         // https://www.baeldung.com/jackson-yaml
-        NacosClients.getClient().signListenerAndCallOnInit(configIds[1], configIds[0], data -> {
+        CdClient.getClient().getAndWatchString(configId, data -> {
             storageService.updateConfig(YamlMapper.readValue(data, StorageConfig.class));
         });
 
