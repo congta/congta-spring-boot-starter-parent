@@ -4,6 +4,7 @@ import com.congta.spring.boot.shared.ex.ExceptionHelper;
 import com.congta.spring.boot.shared.ex.OpCode;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -15,7 +16,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 public class YamlMapper {
 
     public static final ObjectMapper MAPPER = new ObjectMapper(new YAMLFactory())
-            .configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true)
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             .setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
     public static <T> T readValue(String data, Class<T> tClass) {

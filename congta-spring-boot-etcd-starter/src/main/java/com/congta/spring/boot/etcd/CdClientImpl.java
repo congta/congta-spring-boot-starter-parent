@@ -50,6 +50,8 @@ public class CdClientImpl extends CdClient {
                     log.warn("more than 1 path on key [{}]", path);
                 }
                 consumer.accept(response.getKvs().get(0).getValue().toString(StandardCharsets.UTF_8));
+            } else {
+                throw new CdException("node [" + path + "] not exist").withCode(CdErrorCode.NODE_NOT_EXIST);
             }
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             log.error("get and watch etcd error for path: {}, reason: {}", key.toString(StandardCharsets.UTF_8), String.valueOf(e));
