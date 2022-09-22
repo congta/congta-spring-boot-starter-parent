@@ -17,6 +17,7 @@ public class YamlMapper {
 
     public static final ObjectMapper MAPPER = new ObjectMapper(new YAMLFactory())
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true)
             .setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
     public static <T> T readValue(String data, Class<T> tClass) {
